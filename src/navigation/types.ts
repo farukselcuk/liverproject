@@ -2,6 +2,7 @@ export type RootStackParamList = {
   Home: undefined;
   Medicine: undefined;
   MedicineDetail: { medicineId: string; autoPromptReminder?: boolean };
+  DrugJourney: undefined;
   WaterTracker: undefined;
   Nutrition: undefined;
   BagChecklist: undefined;

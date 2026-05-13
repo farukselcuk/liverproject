@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>💊 İlaç Vücutta Yolculuk Animasyonu</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #06061a;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      color: #fff;
+    }
+
+    #mainCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+
+    /* ── Top progress dots ── */
+    #dots {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      cursor: pointer;
+      transition: background .3s, box-shadow .3s;
+    }
+    .dot.active  { background: #6ee7f7; box-shadow: 0 0 10px #6ee7f7; }
+    .dot.done    { background: rgba(110,231,247,.4); }
+
+    /* ── Bottom info ── */
+    #info {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+      z-index: 10;
+      width: 90vw;
+      max-width: 700px;
+    }
+    #stepLabel {
+      font-size: 12px;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,.45);
+      margin-bottom: 6px;
+    }
+    #stepName {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg,#6ee7f7,#a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    #stepDesc {
+      font-size: 14px;
+      color: rgba(255,255,255,.65);
+      line-height: 1.5;
+    }
+
+    /* ── Progress bar ── */
+    #progressWrap {
+      position: absolute;
+      bottom: 85px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 360px;
+      height: 3px;
+      background: rgba(255,255,255,.1);
+      border-radius: 3px;
+      z-index: 10;
+    }
+    #progressBar {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg,#6ee7f7,#a78bfa);
+      transition: width .1s linear;
+    }
+
+    /* ── Controls ── */
+    #controls {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      z-index: 10;
+    }
+    button {
+      padding: 9px 22px;
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      backdrop-filter: blur(8px);
+      transition: background .2s, border-color .2s;
+    }
+    button:hover  { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.45); }
+    #playBtn { background: linear-gradient(135deg,rgba(110,231,247,.2),rgba(167,139,250,.2)); border-color: rgba(110,231,247,.5); }
+
+    /* ── Intro overlay ── */
+    #intro {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at center, #0d1040 0%, #06061a 70%);
+      z-index: 50;
+      transition: opacity .8s;
+    }
+    #intro h1 {
+      font-size: 42px;
+      font-weight: 800;
+      background: linear-gradient(135deg,#6ee7f7,#a78bfa,#ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    #intro p {
+      font-size: 16px;
+      color: rgba(255,255,255,.6);
+      margin-bottom: 36px;
+      text-align: center;
+      max-width: 480px;
+      line-height: 1.6;
+    }
+    #startBtn {
+      padding: 14px 40px;
+      font-size: 16px;
+      border-radius: 30px;
+      background: linear-gradient(135deg,#6ee7f7,#a78bfa);
+      border: none;
+      color: #06061a;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(110,231,247,.3);
+      transition: transform .2s, box-shadow .2s;
+    }
+    #startBtn:hover { transform: scale(1.04); box-shadow: 0 0 45px rgba(110,231,247,.5); }
+  </style>
+</head>
+<body>
+
+<canvas id="mainCanvas"></canvas>
+
+<div id="dots"></div>
+
+<div id="info">
+  <div id="stepLabel"></div>
+  <div id="stepName"></div>
+  <div id="stepDesc"></div>
+</div>
+
+<div id="progressWrap"><div id="progressBar"></div></div>
+
+<div id="controls">
+  <button id="prevBtn">← Önceki</button>
+  <button id="playBtn">⏸ Duraklat</button>
+  <button id="nextBtn">Sonraki →</button>
+</div>
+
+<div id="intro">
+  <h1>💊 İlaç Vücutta Yolculuk</h1>
+  <p>İlacın ağızdan alınmasından hedef organa ulaşmasına kadar<br>
+     adım adım interaktif animasyon</p>
+  <button id="startBtn">▶ Animasyonu Başlat</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  SETUP
+// ═══════════════════════════════════════════════════════════
+const canvas = document.getElementById('mainCanvas');
+const ctx    = canvas.getContext('2d');
+
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+let currentScene = 0;
+let sceneTime    = 0;
+let isPlaying    = false;   // starts false – user clicks Başlat
+let lastTS       = 0;
+let transAlpha   = 1;       // fade-in alpha per scene
+
+// ═══════════════════════════════════════════════════════════
+//  MATH HELPERS
+// ═══════════════════════════════════════════════════════════
+const lerp    = (a,b,t)  => a + (b-a)*t;
+const clamp   = (v,mn,mx)=> Math.max(mn, Math.min(mx, v));
+const easeOut = t => 1 - Math.pow(1-t, 3);
+const easeIn  = t => t*t*t;
+const easeIO  = t => t < .5 ? 2*t*t : -1+(4-2*t)*t;
+
+// ═══════════════════════════════════════════════════════════
+//  DRAW UTILITIES
+// ═══════════════════════════════════════════════════════════
+function bg() {
+  const g = ctx.createLinearGradient(0,0,0,canvas.height);
+  g.addColorStop(0,'#06061a');
+  g.addColorStop(1,'#0c0c35');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // subtle star field
+  ctx.fillStyle = 'rgba(255,255,255,0.025)';
+  for (let i=0;i<60;i++){
+    ctx.beginPath();
+    ctx.arc((i*137.5)%canvas.width,(i*97.3+13)%canvas.height,1,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function glow(x,y,r,col){
+  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,col);
+  g.addColorStop(1,'transparent');
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle=g;
+  ctx.fill();
+}
+
+function capsule(x,y,w,h,c1,c2,ang=0){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(ang);
+  const r=h/2, hw=w/2;
+  ctx.beginPath();
+  ctx.arc(-hw+r,0,r,Math.PI/2,3*Math.PI/2);
+  ctx.lineTo(0,-r); ctx.lineTo(0,r);
+  ctx.closePath();
+  ctx.fillStyle=c1; ctx.fill();
+  ctx.beginPath();
+  ctx.arc(hw-r,0,r,-Math.PI/2,Math.PI/2);
+  ctx.lineTo(0,r); ctx.lineTo(0,-r);
+  ctx.closePath();
+  ctx.fillStyle=c2; ctx.fill();
+  // shine
+  ctx.beginPath();
+  ctx.ellipse(-hw/4,-r/3,hw/3,r/4,-0.3,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,.4)'; ctx.fill();
+  ctx.restore();
+}
+
+function label(x,y,txt,alpha=1,size=15){
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.font=`bold ${size}px Segoe UI`;
+  ctx.textAlign='center';
+  ctx.fillStyle='#6ee7f7';
+  ctx.shadowColor='#6ee7f7'; ctx.shadowBlur=12;
+  ctx.fillText(txt,x,y);
+  ctx.restore();
+}
+
+function subLabel(x,y,txt,alpha=1){
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.font='13px Segoe UI';
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(255,220,180,.85)';
+  ctx.fillText(txt,x,y);
+  ctx.restore();
+}
+
+// simple human silhouette
+function humanOutline(cx,cy,sc=1,al=1){
+  ctx.save();
+  ctx.globalAlpha=al;
+  ctx.translate(cx,cy);
+  ctx.scale(sc,sc);
+  ctx.strokeStyle='rgba(110,231,247,.35)';
+  ctx.lineWidth=2; ctx.lineCap='round';
+
+  // head
+  ctx.beginPath(); ctx.arc(0,-140,28,0,Math.PI*2); ctx.stroke();
+  // neck
+  ctx.beginPath(); ctx.moveTo(-7,-112); ctx.lineTo(-7,-92);
+  ctx.moveTo(7,-112); ctx.lineTo(7,-92); ctx.stroke();
+  // torso
+  ctx.beginPath();
+  ctx.moveTo(-40,-92); ctx.lineTo(-45,18); ctx.lineTo(-25,78); ctx.lineTo(25,78); ctx.lineTo(45,18); ctx.lineTo(40,-92); ctx.closePath();
+  ctx.stroke();
+  // arms
+  ctx.beginPath();
+  ctx.moveTo(-40,-85); ctx.lineTo(-80,-65); ctx.lineTo(-75,22);
+  ctx.moveTo(40,-85);  ctx.lineTo(80,-65);  ctx.lineTo(75,22);
+  ctx.stroke();
+  // legs
+  ctx.beginPath();
+  ctx.moveTo(-24,78); ctx.lineTo(-28,175); ctx.lineTo(-26,215);
+  ctx.moveTo(24,78);  ctx.lineTo(28,175);  ctx.lineTo(26,215);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SCENES
+// ═══════════════════════════════════════════════════════════
+const SCENES = [
+  { name:'İlaç Alımı',                  dur:5,  desc:'Kişi ilacı eline alıp su ile birlikte yutuyor.',                                    fn: s1  },
+  { name:'Ağız ve Yutma',               dur:5,  desc:'İlaç ağız boşluğundan geçerek yutağa (farinks) ulaşıyor.',                          fn: s2  },
+  { name:'Özofagus (Yemek Borusu)',     dur:6,  desc:'Peristaltik kasılmalarla ilaç ~25 cm\'lik yemek borusunu geçiyor.',                 fn: s3  },
+  { name:'Mide',                        dur:6,  desc:'İlaç midede HCl (mide asidi) ve enzimler yardımıyla çözünüyor.',                     fn: s4  },
+  { name:'İnce Bağırsak — Emilim',      dur:7,  desc:'Çözünen ilaç, villüslerden portal kana emilerek dolaşıma katılıyor.',               fn: s5  },
+  { name:'Karaciğer — Metabolizma',     dur:6,  desc:'Portal venle karaciğere gelen ilaç ilk geçiş metabolizmasına uğruyor.',             fn: s6  },
+  { name:'Kalp ve Akciğer Dolaşımı',   dur:6,  desc:'İlaç kalbe, oradan akciğere, tekrar kalbe geçerek sistemik dolaşıma hazır hale geliyor.', fn: s7 },
+  { name:'Sistemik Dolaşım — Dağılım', dur:7,  desc:'Arterler aracılığıyla ilaç tüm organlara ve dokulara taşınıyor.',                   fn: s8  },
+  { name:'Hedef Organ — Terapötik Etki',dur:7,  desc:'İlaç hedef hücre reseptörlerine bağlanarak terapötik etkisini gösteriyor.',          fn: s9  },
+];
+
+// ── Scene 1: İlaç Alımı ──
+function s1(t){
+  const cx=canvas.width/2, cy=canvas.height/2;
+
+  humanOutline(cx, cy+40, 1.3);
+
+  // glass
+  const gx=cx+110, gy=cy-30;
+  ctx.save();
+  ctx.strokeStyle='rgba(150,220,255,.6)'; ctx.lineWidth=2;
+  ctx.fillStyle='rgba(100,180,255,.08)';
+  ctx.beginPath();
+  ctx.moveTo(gx-16,gy-42); ctx.lineTo(gx-22,gy+40); ctx.lineTo(gx+22,gy+40); ctx.lineTo(gx+16,gy-42);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+
+  // water level
+  const wl=lerp(0.85,0.25,Math.min(t*1.5,1));
+  ctx.fillStyle='rgba(100,180,255,.25)';
+  ctx.beginPath();
+  ctx.moveTo(gx-lerp(16,22,wl), gy-42+82*(1-wl));
+  ctx.lineTo(gx-22,gy+40); ctx.lineTo(gx+22,gy+40);
+  ctx.lineTo(gx+lerp(16,22,wl), gy-42+82*(1-wl));
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+
+  // pill travel
+  const ph=clamp((t-0.4)/0.5,0,1);
+  const px=lerp(gx, cx-5, easeOut(ph));
+  const py=lerp(gy-55, cy-94, easeOut(ph));
+  glow(px,py,28,'rgba(255,107,107,.2)');
+  capsule(px,py,22,10,'#ff6b6b','#ffd93d',-0.3);
+
+  label(cx,cy-230,'💊 İlaç Alımı',1,18);
+  subLabel(cx,cy-205,'(Oral uygulama)');
+}
+
+// ── Scene 2: Ağız / Yutma ──
+function s2(t){
+  const cx=canvas.width/2, cy=canvas.height/2;
+  ctx.save();
+
+  // head outline
+  ctx.strokeStyle='rgba(255,200,160,.4)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.ellipse(cx,cy-70,85,105,0,0,Math.PI*2); ctx.stroke();
+
+  // oral cavity
+  ctx.fillStyle='rgba(200,90,90,.15)'; ctx.strokeStyle='rgba(220,120,100,.55)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.ellipse(cx,cy-42,48,22,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+
+  // teeth top
+  ctx.fillStyle='rgba(240,240,240,.6)';
+  for(let i=-3;i<=3;i++){
+    ctx.beginPath(); ctx.rect(cx+i*13-5, cy-62, 10, 12); ctx.fill();
+  }
+  // teeth bottom
+  for(let i=-3;i<=3;i++){
+    ctx.beginPath(); ctx.rect(cx+i*13-5, cy-26, 10, 10); ctx.fill();
+  }
+
+  // tongue
+  ctx.fillStyle='rgba(220,110,100,.55)';
+  ctx.beginPath(); ctx.ellipse(cx,cy-32,36,14,0.15,0,Math.PI); ctx.fill();
+
+  // throat tube
+  ctx.fillStyle='rgba(180,80,80,.15)'; ctx.strokeStyle='rgba(200,100,100,.45)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.rect(cx-22,cy-20,44,90); ctx.fill(); ctx.stroke();
+
+  // pharynx label
+  subLabel(cx+130,cy+30,'Yutak (Farinks)',Math.min(t*3,1));
+  subLabel(cx-130,cy-42,'Ağız boşluğu',Math.min(t*3,1));
+
+  // pill moving down throat
+  const py = lerp(cy-75, cy+80, easeIn(t));
+  glow(cx,py,22,'rgba(255,107,107,.35)');
+  capsule(cx,py,17,8,'#ff6b6b','#ffd93d',Math.PI/2);
+
+  label(cx,cy-210,'🦷 Ağız ve Yutma',1,18);
+  ctx.restore();
+}
+
+// ── Scene 3: Özofagus ──
+function s3(t){
+  const cx=canvas.width/2, cy=canvas.height/2;
+  const top=cy-210, bot=cy+160, tw=38;
+  ctx.save();
+
+  // draw tube walls with peristaltic wave
+  function wallX(y, side){
+    const p=(y-top)/(bot-top);
+    return cx + side*(tw/2 + Math.sin((p*7+t*5)*Math.PI)*3);
+  }
+  // fill
+  ctx.beginPath(); ctx.moveTo(wallX(top,-1),top);
+  for(let y=top;y<=bot;y+=4) ctx.lineTo(wallX(y,-1),y);
+  ctx.lineTo(wallX(bot,1),bot);
+  for(let y=bot;y>=top;y-=4) ctx.lineTo(wallX(y,1),y);
+  ctx.closePath();
+  ctx.fillStyle='rgba(190,85,85,.13)'; ctx.fill();
+  ctx.strokeStyle='rgba(220,110,110,.6)'; ctx.lineWidth=2.5; ctx.stroke();
+
+  // inner folds
+  ctx.strokeStyle='rgba(200,100,100,.2)'; ctx.lineWidth=1;
+  for(let y=top+25;y<bot-25;y+=28){
+    ctx.beginPath();
+    ctx.moveTo(cx-tw/2+5,y);
+    ctx.bezierCurveTo(cx-4,y+5, cx+4,y-5, cx+tw/2-5,y);
+    ctx.stroke();
+  }
+
+  // peristaltic highlight ring
+  const ry=top+(bot-top)*((t*1.2)%1);
+  glow(cx,ry,48,'rgba(220,100,100,.1)');
+
+  // pill
+  const pillY=lerp(top+18, bot-18, easeIO(t));
+  glow(cx,pillY,30,'rgba(255,107,107,.3)');
+  capsule(cx,pillY,20,9,'#ff6b6b','#ffd93d',Math.PI/2);
+
+  // labels
+  label(cx-170,cy-40,'Yemek Borusu',1);
+  subLabel(cx+170,cy-40,'~25 cm');
+
+  if(t>0.25){
+    ctx.save();
+    ctx.font='12px Segoe UI'; ctx.textAlign='left'; ctx.fillStyle='rgba(110,231,247,.7)';
+    ctx.fillText('Peristaltik kasılma',cx+52,pillY+4);
+    ctx.restore();
+  }
+
+  // stomach hint at bottom
+  ctx.strokeStyle='rgba(255,200,60,.35)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx+28,bot+28,36,-Math.PI*.8,Math.PI*.2); ctx.stroke();
+  subLabel(cx+28,bot+72,'Mide →');
+
+  label(cx,top-28,'🫁 Özofagus (Yemek Borusu)',1,18);
+  ctx.restore();
+}
+
+// ── Scene 4: Mide ──
+function s4(t){
+  const cx=canvas.width/2, cy=canvas.height/2;
+  ctx.save();
+
+  // stomach J-shape
+  ctx.beginPath();
+  ctx.moveTo(cx-18,cy-125);
+  ctx.bezierCurveTo(cx+85,cy-145, cx+110,cy-18, cx+75,cy+85);
+  ctx.bezierCurveTo(cx+42,cy+125, cx-42,cy+105, cx-85,cy-18);
+  ctx.bezierCurveTo(cx-105,cy-85, cx-62,cy-135, cx-18,cy-125);
+  ctx.closePath();
+
+  const sg=ctx.createLinearGradient(cx-85,cy-145,cx+110,cy+125);
+  sg.addColorStop(0,'rgba(120,180,80,.06)');
+  sg.addColorStop(.5,'rgba(160,220,80,.14)');
+  sg.addColorStop(1,'rgba(120,180,80,.08)');
+  ctx.fillStyle=sg; ctx.fill();
+  ctx.strokeStyle='rgba(200,200,80,.7)'; ctx.lineWidth=3; ctx.stroke();
+
+  // rugae (gastric folds)
+  ctx.strokeStyle='rgba(180,180,60,.25)'; ctx.lineWidth=1;
+  for(let i=0;i<5;i++){
+    const a = -0.9 + i*0.45;
+    const r1=50+i*5, r2=85+i*8;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*r1, cy+Math.sin(a)*r2*.6);
+    ctx.bezierCurveTo(
+      cx+Math.cos(a+.2)*r1*1.1, cy+Math.sin(a+.2)*r2*.65,
+      cx+Math.cos(a+.35)*r1*1.2,cy+Math.sin(a+.35)*r2*.65,
+      cx+Math.cos(a+.5)*r1,     cy+Math.sin(a+.5)*r2*.6
+    );
+    ctx.stroke();
+  }
+
+  // acid droplets
+  if(t>0.18){
+    for(let i=0;i<10;i++){
+      const ang=(i/10)*Math.PI*2+t*1.5;
+      const r=28+Math.sin(t*4+i)*12;
+      const ax=cx+Math.cos(ang)*r, ay=cy+Math.sin(ang)*r*.7;
+      glow(ax,ay,10,'rgba(160,255,60,.18)');
+      ctx.beginPath(); ctx.arc(ax,ay,3,0,Math.PI*2);
+      ctx.fillStyle='rgba(160,255,60,.5)'; ctx.fill();
+    }
+    ctx.save();
+    ctx.font='italic 13px Segoe UI'; ctx.textAlign='center'; ctx.fillStyle='rgba(180,255,80,.85)';
+    ctx.fillText('HCl (Mide asidi)  •  pH 1.5–3.5', cx, cy+12);
+    ctx.restore();
+  }
+
+  // pill → dissolve
+  const enterT = clamp(t*2,0,1);
+  const px=lerp(cx-18,cx, easeOut(enterT));
+  const py=lerp(cy-125,cy-50, easeOut(enterT));
+  const sc=lerp(1,0, clamp((t-.48)/.48,0,1));
+  const partA=clamp((t-.48)/.48,0,1);
+
+  if(sc>0.04){
+    ctx.save(); ctx.translate(px,py); ctx.scale(sc,sc);
+    capsule(0,0,20,9,'#ff6b6b','#ffd93d',Math.PI/2);
+    ctx.restore();
+  }
+  if(partA>0){
+    for(let i=0;i<14;i++){
+      const ang=(i/14)*Math.PI*2;
+      const r=lerp(0,50,partA)+Math.sin(t*6+i)*4;
+      const dx=px+Math.cos(ang)*r, dy=py+Math.sin(ang)*r;
+      ctx.beginPath(); ctx.arc(dx,dy,3*(1-partA*.5),0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,160,50,${.85*(1-partA*.6)})`; ctx.fill();
+    }
+  }
+  glow(px,py,25,'rgba(255,150,50,.18)');
+
+  label(cx-135,cy-80,'Kardia');
+  label(cx+110,cy-100,'Fundus');
+  label(cx+95,cy+75,'Pilor');
+  label(cx,cy-210,'🟡 Mide (Ventriculus)',1,18);
+  ctx.restore();
+}
+
+// ── Scene 5: İnce Bağırsak ──
+function s5(t){
+  const cx=canvas.width/2, cy=canvas.height/2;
+  ctx.save();
+
+  // coiled intestine (parametric loops)
+  const LOOPS=5, STEPS=LOOPS*24;
+  function iPoint(s){
+    const p=s/STEPS, ang=p*Math.PI*2*LOOPS, r=55+p*75;
+    return [cx+Math.cos(ang)*r*.72, cy+Math.sin(ang)*r*.44];
+  }
+
+  ctx.lineWidth=14; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(215,140,90,.7)';
+  ctx.beginPath();
+  let fp=iPoint(0); ctx.moveTo(fp[0],fp[1]);
+  for(let s=1;s<=STEPS;s++){ const p=iPoint(s); ctx.lineTo(p[0],p[1]); }
+  ctx.stroke();
+
+  ctx.lineWidth=6; ctx.strokeStyle='rgba(255,195,145,.3)';
+  ctx.beginPath();
+  fp=iPoint(0); ctx.moveTo(fp[0],fp[1]);
+  for(let s=1;s<=STEPS;s++){ const p=iPoint(s); ctx.lineTo(p[0],p[1]); }
+  ctx.stroke();
+
+  // drug moving through lumen
+  const drugS=easeIO(t)*STEPS;
+  const dp=iPoint(Math.floor(drugS));
+  glow(dp[0],dp[1],24,'rgba(255,107,107,.45)');
+  ctx.beginPath(); ctx.arc(dp[0],dp[1],8,0,Math.PI*2);
+  ctx.fillStyle='#ff6b6b'; ctx.fill();
+
+  // absorption particles leaving wall
+  if(t>0.15){
+    for(let i=0;i<6;i++){
+      const s2=Math.max(0,drugS-i*3);
+      const pp=iPoint(s2), ang=(s2/STEPS)*Math.PI*2*LOOPS;
+      const ph=((t*3+i*.18)%1);
+      const ox=pp[0]+Math.cos(ang+Math.PI/2)*22*ph;
+      const oy=pp[1]+Math.sin(ang+Math.PI/2)*22*ph;
+      ctx.beginPath(); ctx.arc(ox,oy,3*(1-ph*.5),0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,210,50,${.85*(1-ph)})`; ctx.fill();
+    }
+  }
+
+  // villus inset panel
+  const vx=cx+200, vy=cy-120;
+  ctx.strokeStyle='rgba(215,140,90,.75)'; ctx.lineWidth=1.5;
+  for(let i=0;i<6;i++){
+    const vvx=vx+(i-2.5)*13;
+    ctx.beginPath();
+    ctx.moveTo(vvx,vy+42);
+    ctx.bezierCurveTo(vvx-8,vy+12,vvx-5,vy-28,vvx,vy-40);
+    ctx.bezierCurveTo(vvx+5,vy-28,vvx+8,vy+12,vvx,vy+42);
+    ctx.fillStyle='rgba(215,140,90,.22)'; ctx.fill(); ctx.stroke();
+    // capillary inside
+    ctx.beginPath(); ctx.moveTo(vvx,vy+35); ctx.lineTo(vvx,vy-30);
+    ctx.strokeStyle='rgba(255,100,100,.5)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.strokeStyle='rgba(215,140,90,.75)'; ctx.lineWidth=1.5;
+  }
+  subLabel(vx,vy+60,'Villüsler');
+  subLabel(vx,vy+76,'(emilim yüzeyi)');
+
+  label(cx,cy-200,'🧬 İnce Bağırsak Emilimi',1,18);
+  subLabel(cx,cy+190,'İlaç villüslerden portal kana geçiyor →');
+  ctx.restore();
+}
+
+// ── Scene 6: Karaciğer ──
+function s6(t){
+  const cx=canvas.width/2, cy=canvas.height/2;
+  ctx.save();
+
+  // portal vein
+  ctx.strokeStyle='rgba(160,90,90,.6)'; ctx.lineWidth=9;
+  ctx.beginPath();
+  ctx.moveTo(cx-10,cy+165);
+  ctx.bezierCurveTo(cx+15,cy+100, cx+50,cy+30, cx+28,cy-18);
+  ctx.stroke();
+
+  // drug along portal vein
+  const pvT=Math.min(t*2,1);
+  const pvX=lerp(cx-10,cx+28,easeOut(pvT));
+  const pvY=lerp(cy+165,cy-18,easeOut(pvT));
+  if(pvT<.99){ glow(pvX,pvY,14,'rgba(255,107,107,.45)'); ctx.beginPath(); ctx.arc(pvX,pvY,7,0,Math.PI*2); ctx.fillStyle='#ff6b6b'; ctx.fill(); }
+
+  // liver body
+  ctx.beginPath();
+  ctx.moveTo(cx-12,cy-28);
+  ctx.bezierCurveTo(cx+28,cy-80, cx+145,cy-92, cx+155,cy-28);
+  ctx.bezierCurveTo(cx+165,cy+32, cx+105,cy+62, cx+22,cy+52);
+  ctx.bezierCurveTo(cx-28,cy+42, cx-62,cy+12, cx-12,cy-28);
+  ctx.closePath();
+  const lg=ctx.createLinearGradient(cx-12,cy-92,cx+155,cy+62);
+  lg.addColorStop(0,'rgba(160,55,55,.65)'); lg.addColorStop(1,'rgba(200,75,75,.4)');
+  ctx.fillStyle=lg; ctx.fill();
+  ctx.strokeStyle='rgba(210,100,100,.8)'; ctx.lineWidth=3; ctx.stroke();
+
+  // hepatic lobule pattern
+  ctx.strokeStyle='rgba(220,120,120,.2)'; ctx.lineWidth=1;
+  for(let i=0;i<4;i++){
+    const hx=cx+30+i*28, hy=cy+6;
+    ctx.beginPath(); ctx.arc(hx,hy,12,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(hx,hy,3,0,Math.PI*2); ctx.fillStyle='rgba(220,120,120,.4)'; ctx.fill();
+  }
+
+  // metabolism animation
+  if(t>0.48){
+    const mA=(t-.48)/.48;
+    for(let i=0;i<7;i++){
+      const mx=cx+28+i*18;
+      const my=cy+Math.sin(t*5+i)*12;
+      glow(mx,my,10,`rgba(255,220,50,${mA*.5})`);
+      ctx.beginPath(); ctx.arc(mx,my,4,0,Math.PI*2); ctx.fillStyle=`rgba(255,220,50,${mA*.75})`; ctx.fill();
+    }
+    // bile duct arrow
+    ctx.save();
+    ctx.setLineDash([5,5]);
+    ctx.strokeStyle=`rgba(255,220,50,${mA*.45})`; ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(cx+130,cy-28);
+    ctx.bezierCurveTo(cx+165,cy-60,cx+185,cy-85,cx+165,cy-115);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+    label(cx+172,cy-128,'Safra kanalı',mA,12);
+    subLabel(cx+80,cy-110,`CYP450 enzimi aktif`,mA);
+  }
+
+  label(cx+70,cy-20,'Karaciğer',1);
+  subLabel(cx-10,cy+185,'Portal ven');
+  label(cx,cy-200,'🫀 Karaciğer — İlk Geçiş Metabolizması',1,16);
+  ctx.restore();
+}
+
+// ── Scene 7: Kalp ──
+function s7(t){
+  const cx=canvas.width/2, cy=canvas.height/2;
+  ctx.save();
+
+  // ECG line at bottom
+  const ecgX=cx-150, ecgY=cy+135;
+  ctx.strokeStyle='rgba(255,90,90,.35)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(ecgX,ecgY);
+  for(let i=0;i<180;i++){
+    const x=ecgX+i;
+    const ph=((i/32+t*3)%1);
+    let y=ecgY;
+    if(ph<.08)        y-=ph/.08*12;
+    else if(ph<.16)   y-=(0.16-ph)/.08*12;
+    else if(ph<.26)   y-=Math.sin((ph-.16)/.1*Math.PI)*45;
+    else if(ph<.38)   y+=Math.sin((ph-.26)/.12*Math.PI)*18;
+    ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // heartbeat scale
+  const beat=(Math.sin(t*Math.PI*5)>.65)?1.07:1.0;
+  ctx.translate(cx,cy); ctx.scale(beat,beat); ctx.translate(-cx,-cy);
+
+  // heart shape
+  ctx.beginPath();
+  ctx.moveTo(cx,cy+26);
+  ctx.bezierCurveTo(cx-12,cy+4, cx-55,cy-28, cx-55,cy-62);
+  ctx.bezierCurveTo(cx-55,cy-94, cx-22,cy-94, cx,cy-68);
+  ctx.bezierCurveTo(cx+22,cy-94, cx+55,cy-94, cx+55,cy-62);
+  ctx.bezierCurveTo(cx+55,cy-28, cx+12,cy+4, cx,cy+26);
+  ctx.closePath();
+  const hg=ctx.createRadialGradient(cx,cy-42,0,cx,cy-42,60);
+  hg.addColorStop(0,'rgba(255,95,95,.85)'); hg.addColorStop(1,'rgba(180,28,28,.6)');
+  ctx.fillStyle=hg; ctx.fill();
+  ctx.strokeStyle='rgba(255,150,150,.8)'; ctx.lineWidth=3; ctx.stroke();
+
+  ctx.translate(cx,cy); ctx.scale(1/beat,1/beat); ctx.translate(-cx,-cy);
+
+  // aorta (up-left)
+  ctx.strokeStyle='rgba(255,90,90,.6)'; ctx.lineWidth=12;
+  ctx.beginPath();
+  ctx.moveTo(cx-12,cy-68); ctx.lineTo(cx-12,cy-155);
+  ctx.bezierCurveTo(cx-12,cy-185,cx-65,cy-185,cx-85,cy-150);
+  ctx.stroke();
+
+  // pulmonary artery (up-right)
+  ctx.strokeStyle='rgba(120,150,255,.5)'; ctx.lineWidth=9;
+  ctx.beginPath();
+  ctx.moveTo(cx+10,cy-68);
+  ctx.bezierCurveTo(cx+35,cy-100, cx+90,cy-80, cx+110,cy-125);
+  ctx.stroke();
+
+  // vena cava (right down)
+  ctx.strokeStyle='rgba(100,100,200,.45)'; ctx.lineWidth=8;
+  ctx.beginPath();
+  ctx.moveTo(cx+35,cy-80); ctx.lineTo(cx+35,cy-175);
+  ctx.stroke();
+
+  // animated drug dot in aorta
+  if(t>0.28){
+    const fp=(t*2.2)%1;
+    const ax=lerp(cx-12,cx-85,easeIO(fp));
+    const ay=lerp(cy-68,cy-150,easeIO(fp));
+    glow(ax,ay,14,'rgba(255,220,50,.5)');
+    ctx.beginPath(); ctx.arc(ax,ay,6,0,Math.PI*2); ctx.fillStyle='#ffd93d'; ctx.fill();
+  }
+
+  label(cx-85,cy-200,'Aort');
+  label(cx+35,cy-190,'V. Cava');
+  label(cx+115,cy-125,'Akciğer');
+  label(cx,cy-210,'❤️ Kalp ve Dolaşım',1,18);
+  ctx.restore();
+}
+
+// ── Scene 8: Sistemik Dağılım ──
+function s8(t){
+  const cx=canvas.width/2, cy=canvas.height/2;
+  ctx.save();
+
+  humanOutline(cx,cy+40,1.45,0.28);
+
+  // vessel network
+  const vessels=[
+    [[cx,cy-115],[cx,cy],[cx+18,cy+98]],              // aorta descending
+    [[cx,cy-115],[cx-5,cy-175],[cx-22,cy-220]],        // carotid L
+    [[cx,cy-115],[cx+5,cy-175],[cx+22,cy-220]],        // carotid R
+    [[cx,cy-82],[cx-72,cy-62],[cx-100,cy+18]],         // arm L
+    [[cx,cy-82],[cx+72,cy-62],[cx+100,cy+18]],         // arm R
+    [[cx+18,cy+98],[cx-14,cy+148],[cx-18,cy+225]],     // leg L
+    [[cx+18,cy+98],[cx+30,cy+148],[cx+34,cy+225]],     // leg R
+  ];
+
+  vessels.forEach(v=>{
+    ctx.strokeStyle='rgba(255,90,90,.25)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(v[0][0],v[0][1]);
+    v.slice(1).forEach(p=>ctx.lineTo(p[0],p[1]));
+    ctx.stroke();
+  });
+
+  // animated particles along vessels
+  for(let i=0;i<24;i++){
+    const pProg=((t+i/24)%1);
+    const pE=easeOut(pProg);
+    const vi=i%vessels.length;
+    const seg=vessels[vi];
+    const n=seg.length-1;
+    const sp=pE*n;
+    const si=Math.min(Math.floor(sp),n-1);
+    const st=sp-si;
+    if(si<n){
+      const p1=seg[si],p2=seg[si+1];
+      const px=lerp(p1[0],p2[0],st), py=lerp(p1[1],p2[1],st);
+      glow(px,py,9,`rgba(255,210,50,${.35*(1-pProg*.5)})`);
+      ctx.beginPath(); ctx.arc(px,py,3.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,220,50,${.8*(1-pProg*.5)})`; ctx.fill();
+    }
+  }
+
+  // organ circles
+  const organs=[
+    {x:cx-18,y:cy-85,r:16,n:'Kalp'},
+    {x:cx-28,y:cy-58,r:22,n:'Akciğer'},
+    {x:cx+22,y:cy-18,r:20,n:'Karaciğer'},
+    {x:cx+12,y:cy+72,r:13,n:'Böbrek'},
+    {x:cx-8, y:cy+72,r:13,n:'Böbrek'},
+    {x:cx,   y:cy+20,r:15,n:'Bağırsak'},
+  ];
+  organs.forEach((o,i)=>{
+    const a=clamp(t*5-i*.4,0,1);
+    if(!a) return;
+    glow(o.x,o.y,o.r*2,`rgba(110,231,247,${.12*a})`);
+    ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(110,231,247,${.08*a})`;
+    ctx.strokeStyle=`rgba(110,231,247,${.4*a})`; ctx.lineWidth=1.5;
+    ctx.fill(); ctx.stroke();
+    label(o.x+(o.x>cx?o.r+38:-o.r-38),o.y,o.n,a,12);
+  });
+
+  label(cx,cy-245,'🩸 Sistemik Dolaşım — Dağılım',1,18);
+  ctx.restore();
+}
+
+// ── Scene 9: Hedef Organ ──
+function s9(t){
+  const cx=canvas.width/2, cy=canvas.height/2;
+  ctx.save();
+
+  const cellR=100;
+
+  // cell membrane
+  ctx.beginPath(); ctx.arc(cx,cy,cellR,0,Math.PI*2);
+  const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,cellR);
+  cg.addColorStop(0,'rgba(80,120,210,.28)');
+  cg.addColorStop(.7,'rgba(60,100,190,.18)');
+  cg.addColorStop(1,'rgba(110,150,240,.1)');
+  ctx.fillStyle=cg; ctx.fill();
+  ctx.strokeStyle='rgba(110,150,240,.65)'; ctx.lineWidth=3; ctx.stroke();
+
+  // organelles (ER, mitochondria hints)
+  ctx.strokeStyle='rgba(120,100,200,.25)'; ctx.lineWidth=1;
+  for(let i=0;i<4;i++){
+    const ea=(i/4)*Math.PI*2+0.5;
+    const er=45+i*5;
+    ctx.beginPath(); ctx.ellipse(cx+Math.cos(ea)*er*.6, cy+Math.sin(ea)*er*.5, 20, 9, ea, 0, Math.PI*2); ctx.stroke();
+  }
+
+  // nucleus
+  ctx.beginPath(); ctx.arc(cx,cy,36,0,Math.PI*2);
+  ctx.fillStyle='rgba(80,60,155,.42)'; ctx.fill();
+  ctx.strokeStyle='rgba(130,100,225,.65)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.font='11px Segoe UI'; ctx.textAlign='center'; ctx.fillStyle='rgba(200,180,255,.8)';
+  ctx.fillText('Çekirdek',cx,cy+4);
+
+  // receptor proteins on membrane
+  for(let i=0;i<9;i++){
+    const ra=(i/9)*Math.PI*2;
+    const rx=cx+Math.cos(ra)*cellR, ry=cy+Math.sin(ra)*cellR;
+    ctx.beginPath(); ctx.arc(rx,ry,8,0,Math.PI*2);
+    ctx.fillStyle=i<3?'rgba(255,220,50,.85)':'rgba(140,140,200,.5)';
+    ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.3)'; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  // drug molecules approaching
+  for(let i=0;i<3;i++){
+    const ang=(i/3)*Math.PI*2+.5;
+    const bnd=clamp(t*2.2-i*.4,0,1);
+    const r=lerp(cellR+90,cellR,easeOut(bnd));
+    const mx=cx+Math.cos(ang)*r, my=cy+Math.sin(ang)*r;
+    glow(mx,my,16,`rgba(255,107,107,${.4*(1-bnd*.4)})`);
+    ctx.beginPath(); ctx.arc(mx,my,7,0,Math.PI*2); ctx.fillStyle='#ff6b6b'; ctx.fill();
+    if(bnd>.94) glow(mx,my,32,'rgba(255,255,60,.55)');
+  }
+
+  // effect ripples
+  if(t>.45){
+    const rA=(t-.45)/.55;
+    for(let r=0;r<3;r++){
+      const rr=((t*1.8+r*.32)%1)*65+cellR;
+      ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(255,220,50,${.28*(1-(rr-cellR)/65)*rA})`; ctx.lineWidth=2; ctx.stroke();
+    }
+  }
+
+  label(cx,cy-155,'🎯 Hedef Hücre',1);
+  label(cx-165,cy,'Reseptör',1,12);
+
+  if(t>.6){
+    const fa=clamp((t-.6)/.35,0,1);
+    ctx.save();
+    ctx.font='bold 15px Segoe UI'; ctx.textAlign='center';
+    ctx.fillStyle=`rgba(100,255,150,${fa})`;
+    ctx.shadowColor='#64ff96'; ctx.shadowBlur=14;
+    ctx.fillText('✓ İlaç reseptörüne bağlandı!',cx,cy+180);
+    ctx.fillText('Terapötik etki başlıyor.',cx,cy+202);
+    ctx.restore();
+  }
+
+  label(cx,cy-210,'⚡ Hedef Organ — Terapötik Etki',1,18);
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UI
+// ═══════════════════════════════════════════════════════════
+const dotsEl     = document.getElementById('dots');
+const stepLabel  = document.getElementById('stepLabel');
+const stepName   = document.getElementById('stepName');
+const stepDesc   = document.getElementById('stepDesc');
+const progBar    = document.getElementById('progressBar');
+const playBtn    = document.getElementById('playBtn');
+const prevBtn    = document.getElementById('prevBtn');
+const nextBtn    = document.getElementById('nextBtn');
+
+SCENES.forEach((_,i)=>{
+  const d=document.createElement('div');
+  d.className='dot'; d.id=`dot${i}`;
+  d.addEventListener('click',()=>goTo(i));
+  dotsEl.appendChild(d);
+});
+
+function updateUI(){
+  stepLabel.textContent=`AŞAMA ${currentScene+1} / ${SCENES.length}`;
+  stepName.textContent=SCENES[currentScene].name;
+  stepDesc.textContent=SCENES[currentScene].desc;
+  document.querySelectorAll('.dot').forEach((d,i)=>{
+    d.className='dot'+(i===currentScene?' active':i<currentScene?' done':'');
+  });
+  playBtn.textContent=isPlaying?'⏸ Duraklat':'▶ Oynat';
+}
+
+function goTo(i){
+  currentScene=clamp(i,0,SCENES.length-1);
+  sceneTime=0; transAlpha=0;
+  updateUI();
+}
+
+prevBtn.addEventListener('click',()=>goTo(currentScene-1));
+nextBtn.addEventListener('click',()=>goTo(currentScene+1));
+playBtn.addEventListener('click',()=>{ isPlaying=!isPlaying; updateUI(); });
+
+document.getElementById('startBtn').addEventListener('click',()=>{
+  const intro=document.getElementById('intro');
+  intro.style.opacity='0';
+  setTimeout(()=>intro.style.display='none',800);
+  isPlaying=true; updateUI();
+});
+
+updateUI();
+
+// ═══════════════════════════════════════════════════════════
+//  MAIN LOOP
+// ═══════════════════════════════════════════════════════════
+function loop(ts){
+  const dt=lastTS?(ts-lastTS)/1000:0;
+  lastTS=ts;
+
+  if(isPlaying){
+    sceneTime+=dt;
+    transAlpha=Math.min(transAlpha+dt*2.5,1);  // fade-in over ~0.4s
+
+    if(sceneTime>=SCENES[currentScene].dur){
+      if(currentScene<SCENES.length-1){
+        currentScene++; sceneTime=0; transAlpha=0; updateUI();
+      } else {
+        isPlaying=false; updateUI();
+      }
+    }
+  } else {
+    transAlpha=1;
+  }
+
+  const progress=Math.min(sceneTime/SCENES[currentScene].dur,1);
+  progBar.style.width=`${progress*100}%`;
+
+  bg();
+
+  ctx.save();
+  ctx.globalAlpha=transAlpha;
+  SCENES[currentScene].fn(progress);
+  ctx.restore();
+
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-config.resolver.assetExts.push('glb', 'gltf', 'vrx', 'obj', 'mtl', 'bin', 'tflite');
+config.resolver.assetExts.push('glb', 'gltf', 'vrx', 'obj', 'mtl', 'bin', 'tflite', 'html');
 
 // tfjs-react-native internally imports react-native-fs (bundle_resource_io)
 // which is a native module unavailable in Expo Go. We point it to an empty

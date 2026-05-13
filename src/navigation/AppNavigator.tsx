@@ -10,6 +10,7 @@ import { RootStackParamList } from './types';
 import HomeScreen from '../screens/HomeScreen';
 import MedicineScreen from '../screens/MedicineScreen';
 import MedicineDetailScreen from '../screens/MedicineDetailScreen';
+import DrugJourneyScreen from '../screens/DrugJourneyScreen';
 import WaterTrackerScreen from '../screens/WaterTrackerScreen';
 import NutritionScreen from '../screens/NutritionScreen';
 import BagChecklistScreen from '../screens/BagChecklistScreen';
@@ -24,6 +25,7 @@ const linking = {
       Home: '',
       Medicine: 'medicine',
       MedicineDetail: 'medicine/:medicineId',
+      DrugJourney: 'drug-journey',
       WaterTracker: 'water',
       Nutrition: 'nutrition',
       BagChecklist: 'bag',
@@ -62,6 +64,11 @@ const AppNavigator: React.FC = () => {
             cardStyle: { backgroundColor: 'transparent' },
             animationEnabled: true,
           }}
+        />
+        <Stack.Screen
+          name="DrugJourney"
+          component={DrugJourneyScreen}
+          options={{ gestureEnabled: true }}
         />
         <Stack.Screen
           name="WaterTracker"

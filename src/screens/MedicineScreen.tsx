@@ -23,7 +23,7 @@ const allMedicines: MedicineInfo[] = medicationsData.medicines as MedicineInfo[]
 // ── Kategorileri çıkar ────────────────────────────────────────────────────────
 const ALL_CATEGORIES = ['Tümü', ...new Set(allMedicines.map(m => m.category))];
 
-type NavProp = StackNavigationProp<RootStackParamList, 'Medicine'>;
+type NavProp = StackNavigationProp<RootStackParamList, 'Medicine' | 'DrugJourney'>;
 
 const MedicineScreen: React.FC = () => {
   const navigation = useNavigation<NavProp>();
@@ -73,6 +73,21 @@ const MedicineScreen: React.FC = () => {
           />
         </View>
       )}
+
+      {/* ── İlaç Yolculuğu Banner ─────────────────────────────────────────── */}
+      <TouchableOpacity
+        style={styles.journeyBanner}
+        activeOpacity={0.82}
+        onPress={() => navigation.navigate('DrugJourney')}>
+        <View style={styles.journeyBannerLeft}>
+          <Text style={styles.journeyBannerIcon}>💊</Text>
+          <View>
+            <Text style={styles.journeyBannerTitle}>İlaç Vücutta Yolculuk</Text>
+            <Text style={styles.journeyBannerSub}>9 aşamalı interaktif animasyon →</Text>
+          </View>
+        </View>
+        <Text style={styles.journeyBannerArrow}>▶</Text>
+      </TouchableOpacity>
 
       {/* ── Kategori Filtreleme ────────────────────────────────────────────── */}
       <ScrollView
@@ -338,6 +353,51 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     letterSpacing: 0.3,
+  },
+
+  // ── İlaç Yolculuğu Banner ───────────────────────────────────────────────────
+  journeyBanner: {
+    marginHorizontal: Spacing.base,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderRadius: Radius.lg,
+    backgroundColor: '#0d1840',
+    borderWidth: 1,
+    borderColor: 'rgba(110,231,247,0.35)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.md,
+    shadowColor: '#6ee7f7',
+    shadowOffset: {width: 0, height: 0},
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  journeyBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  journeyBannerIcon: {
+    fontSize: 28,
+  },
+  journeyBannerTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#6ee7f7',
+    letterSpacing: 0.2,
+  },
+  journeyBannerSub: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: 2,
+  },
+  journeyBannerArrow: {
+    fontSize: 16,
+    color: '#6ee7f7',
+    opacity: 0.8,
   },
 
   // ── FAB ────────────────────────────────────────────────────────────────────
