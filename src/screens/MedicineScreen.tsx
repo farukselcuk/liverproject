@@ -358,8 +358,8 @@ const styles = StyleSheet.create({
   // ── İlaç Yolculuğu Banner ───────────────────────────────────────────────────
   journeyBanner: {
     marginHorizontal: Spacing.base,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.sm,
+    marginTop: Spacing.base,
+    marginBottom: Spacing.md,
     borderRadius: Radius.lg,
     backgroundColor: '#0d1840',
     borderWidth: 1,
@@ -367,8 +367,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.base,
     shadowColor: '#6ee7f7',
     shadowOffset: {width: 0, height: 0},
     shadowOpacity: 0.18,
