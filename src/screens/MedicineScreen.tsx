@@ -93,6 +93,7 @@ const MedicineScreen: React.FC = () => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={{flexGrow: 0}}
         contentContainerStyle={styles.categoryScroll}>
         {ALL_CATEGORIES.map(category => (
           <TouchableOpacity
@@ -228,8 +229,9 @@ const styles = StyleSheet.create({
   categoryScroll: {
     paddingHorizontal: Spacing.base,
     paddingTop: Spacing.sm,
-    paddingBottom: Spacing.base,
+    paddingBottom: Spacing.md,
     gap: Spacing.sm,
+    flexGrow: 0,
   },
   categoryChip: {
     paddingHorizontal: Spacing.base,
@@ -238,6 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bgSurface,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
+    alignSelf: 'flex-start',
   },
   categoryChipActive: {
     backgroundColor: Colors.brandBlue,
