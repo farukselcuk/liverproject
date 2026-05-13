@@ -227,12 +227,13 @@ const styles = StyleSheet.create({
   // ── Kategori Filtreleme ────────────────────────────────────────────────────
   categoryScroll: {
     paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.md,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.base,
     gap: Spacing.sm,
   },
   categoryChip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.round,
     backgroundColor: Colors.bgSurface,
     borderWidth: 1,

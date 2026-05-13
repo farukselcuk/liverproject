@@ -1,51 +1,26 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {Asset} from 'expo-asset';
 
 import {Colors, Typography, Spacing, Radius} from '../theme';
+import drugJourneyHtml from '../data/drugJourneyHtml';
 
 /**
  * İlaç Vücutta Yolculuk Animasyonu Ekranı
  * ─────────────────────────────────────────
- * assets/drugJourney.html dosyasını WebView içinde görüntüler.
- * İlacın ağızdan alınmasından hedef organa ulaşmasına kadar
- * 9 aşamalı interaktif canvas animasyonu sunar.
+ * 9 aşamalı interaktif canvas animasyonu.
+ * HTML doğrudan JS modülünden yüklenir — cache sorunu yok.
  */
 export default function DrugJourneyScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const [localUri, setLocalUri] = useState<string | null>(null);
-  const [error, setError] = useState(false);
-
-  const loadAsset = useCallback(async () => {
-    try {
-      setError(false);
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const asset = Asset.fromModule(require('../../assets/drugJourney.html'));
-      await asset.downloadAsync();
-      if (asset.localUri) {
-        setLocalUri(asset.localUri);
-      } else {
-        setError(true);
-      }
-    } catch (e) {
-      console.warn('DrugJourney asset yüklenemedi:', e);
-      setError(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadAsset();
-  }, [loadAsset]);
 
   return (
     <View style={styles.screen}>
@@ -57,43 +32,19 @@ export default function DrugJourneyScreen() {
           <Text style={styles.backIcon}>‹</Text>
         </TouchableOpacity>
         <Text style={styles.topBarTitle}>💊 İlaç Yolculuğu</Text>
-        {/* sağ taraf denge için boş view */}
         <View style={styles.backBtn} />
       </View>
 
-      {/* ── İçerik ───────────────────────────────────────────────────────── */}
-      {localUri ? (
-        <WebView
-          source={{uri: localUri}}
-          style={styles.webview}
-          originWhitelist={['*']}
-          javaScriptEnabled
-          domStorageEnabled
-          scrollEnabled={false}
-          bounces={false}
-          allowFileAccess
-          allowUniversalAccessFromFileURLs
-          startInLoadingState
-          renderLoading={() => (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color={Colors.brandBlue} />
-            </View>
-          )}
-        />
-      ) : error ? (
-        <View style={styles.centered}>
-          <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.errorText}>Animasyon yüklenemedi</Text>
-          <TouchableOpacity style={styles.retryBtn} onPress={loadAsset}>
-            <Text style={styles.retryText}>Tekrar Dene</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.brandBlue} />
-          <Text style={styles.loadingText}>Animasyon hazırlanıyor…</Text>
-        </View>
-      )}
+      {/* ── WebView ──────────────────────────────────────────────────────── */}
+      <WebView
+        source={{html: drugJourneyHtml}}
+        style={styles.webview}
+        originWhitelist={['*']}
+        javaScriptEnabled
+        domStorageEnabled
+        scrollEnabled={false}
+        bounces={false}
+      />
     </View>
   );
 }
@@ -133,41 +84,5 @@ const styles = StyleSheet.create({
   webview: {
     flex: 1,
     backgroundColor: '#06061a',
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.xxl,
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#06061a',
-  },
-  loadingText: {
-    ...Typography.bodyMedium,
-    color: 'rgba(255,255,255,0.5)',
-    marginTop: Spacing.md,
-  },
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: Spacing.md,
-  },
-  errorText: {
-    ...Typography.headingSmall,
-    color: 'rgba(255,255,255,0.6)',
-    marginBottom: Spacing.lg,
-  },
-  retryBtn: {
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.brandBlue,
-    borderRadius: Radius.round,
-  },
-  retryText: {
-    ...Typography.labelLarge,
-    color: '#fff',
   },
 });

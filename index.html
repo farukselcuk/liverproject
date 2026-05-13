@@ -39,8 +39,8 @@
       cursor: pointer;
       transition: background .3s, box-shadow .3s;
     }
-    .dot.active  { background: #6ee7f7; box-shadow: 0 0 10px #6ee7f7; }
-    .dot.done    { background: rgba(110,231,247,.4); }
+    .dot.active  { background: #6ee7f7; box-shadow: 0 0 14px #6ee7f7; transform: scale(1.3); }
+    .dot.done    { background: rgba(110,231,247,.5); }
 
     /* ── Bottom info ── */
     #info {
@@ -55,23 +55,30 @@
       max-width: 700px;
     }
     #stepLabel {
-      font-size: 12px;
-      letter-spacing: 3px;
-      color: rgba(255,255,255,.45);
-      margin-bottom: 6px;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: rgba(255,255,255,.4);
+      margin-bottom: 8px;
+      text-transform: uppercase;
     }
     #stepName {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 700;
-      background: linear-gradient(135deg,#6ee7f7,#a78bfa);
+      background: linear-gradient(135deg,#6ee7f7,#a78bfa,#ff6bab);
+      background-size: 200% 200%;
+      animation: gradShift 4s ease infinite;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+    }
+    @keyframes gradShift {
+      0%,100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
     #stepDesc {
-      font-size: 14px;
-      color: rgba(255,255,255,.65);
-      line-height: 1.5;
+      font-size: 13px;
+      color: rgba(255,255,255,.6);
+      line-height: 1.6;
     }
 
     /* ── Progress bar ── */
@@ -80,17 +87,20 @@
       bottom: 85px;
       left: 50%;
       transform: translateX(-50%);
-      width: 360px;
+      width: 300px;
       height: 3px;
-      background: rgba(255,255,255,.1);
+      background: rgba(255,255,255,.08);
       border-radius: 3px;
       z-index: 10;
     }
     #progressBar {
       height: 100%;
       border-radius: 3px;
-      background: linear-gradient(90deg,#6ee7f7,#a78bfa);
+      background: linear-gradient(90deg,#6ee7f7,#a78bfa,#ff6bab);
+      background-size: 200% 100%;
+      animation: gradShift 3s ease infinite;
       transition: width .1s linear;
+      box-shadow: 0 0 8px rgba(110,231,247,0.4);
     }
 
     /* ── Controls ── */
@@ -100,22 +110,25 @@
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 12px;
+      gap: 10px;
       z-index: 10;
     }
     button {
-      padding: 9px 22px;
-      border: 1px solid rgba(255,255,255,.25);
-      background: rgba(255,255,255,.08);
-      color: #fff;
+      padding: 8px 20px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.85);
       border-radius: 20px;
       cursor: pointer;
-      font-size: 13px;
-      backdrop-filter: blur(8px);
-      transition: background .2s, border-color .2s;
+      font-size: 12px;
+      backdrop-filter: blur(12px);
+      transition: all .25s ease;
     }
-    button:hover  { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.45); }
-    #playBtn { background: linear-gradient(135deg,rgba(110,231,247,.2),rgba(167,139,250,.2)); border-color: rgba(110,231,247,.5); }
+    button:hover  { background: rgba(255,255,255,.15); border-color: rgba(110,231,247,.5); }
+    #playBtn {
+      background: linear-gradient(135deg,rgba(110,231,247,.15),rgba(167,139,250,.15));
+      border-color: rgba(110,231,247,.4);
+    }
 
     /* ── Intro overlay ── */
     #intro {
@@ -125,40 +138,49 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(ellipse at center, #0d1040 0%, #06061a 70%);
+      background: radial-gradient(ellipse at 40% 30%, rgba(90,50,180,0.15) 0%, transparent 50%),
+                  radial-gradient(ellipse at 60% 70%, rgba(110,231,247,0.08) 0%, transparent 50%),
+                  radial-gradient(ellipse at center, #0d1040 0%, #06061a 70%);
       z-index: 50;
-      transition: opacity .8s;
+      transition: opacity 1s ease;
     }
     #intro h1 {
-      font-size: 42px;
+      font-size: 36px;
       font-weight: 800;
       background: linear-gradient(135deg,#6ee7f7,#a78bfa,#ff6b6b);
+      background-size: 200% 200%;
+      animation: gradShift 4s ease infinite;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       text-align: center;
     }
     #intro p {
-      font-size: 16px;
-      color: rgba(255,255,255,.6);
-      margin-bottom: 36px;
+      font-size: 15px;
+      color: rgba(255,255,255,.55);
+      margin-bottom: 40px;
       text-align: center;
-      max-width: 480px;
-      line-height: 1.6;
+      max-width: 420px;
+      line-height: 1.7;
     }
     #startBtn {
-      padding: 14px 40px;
-      font-size: 16px;
+      padding: 14px 44px;
+      font-size: 15px;
       border-radius: 30px;
       background: linear-gradient(135deg,#6ee7f7,#a78bfa);
       border: none;
       color: #06061a;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 0 30px rgba(110,231,247,.3);
-      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 0 30px rgba(110,231,247,.25), 0 0 60px rgba(167,139,250,.15);
+      transition: transform .25s, box-shadow .25s;
+      animation: btnPulse 2.5s ease-in-out infinite;
     }
-    #startBtn:hover { transform: scale(1.04); box-shadow: 0 0 45px rgba(110,231,247,.5); }
+    @keyframes btnPulse {
+      0%,100% { box-shadow: 0 0 30px rgba(110,231,247,.25), 0 0 60px rgba(167,139,250,.15); }
+      50% { box-shadow: 0 0 45px rgba(110,231,247,.4), 0 0 80px rgba(167,139,250,.25); }
+    }
+    #startBtn:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
@@ -221,28 +243,64 @@ const easeIO  = t => t < .5 ? 2*t*t : -1+(4-2*t)*t;
 //  DRAW UTILITIES
 // ═══════════════════════════════════════════════════════════
 function bg() {
+  // deep space gradient
   const g = ctx.createLinearGradient(0,0,0,canvas.height);
-  g.addColorStop(0,'#06061a');
-  g.addColorStop(1,'#0c0c35');
+  g.addColorStop(0,'#03050f');
+  g.addColorStop(0.4,'#06081e');
+  g.addColorStop(0.7,'#0a0d2e');
+  g.addColorStop(1,'#080a22');
   ctx.fillStyle = g;
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  // subtle star field
-  ctx.fillStyle = 'rgba(255,255,255,0.025)';
-  for (let i=0;i<60;i++){
+  // nebula glow — slow breathing
+  const breath = 0.5 + 0.15 * Math.sin(performance.now()/3000);
+  const ng = ctx.createRadialGradient(canvas.width*.55,canvas.height*.35,0,canvas.width*.55,canvas.height*.35,canvas.width*.5);
+  ng.addColorStop(0,`rgba(90,50,180,${0.06*breath})`);
+  ng.addColorStop(0.5,`rgba(40,80,200,${0.04*breath})`);
+  ng.addColorStop(1,'transparent');
+  ctx.fillStyle=ng;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // second nebula
+  const ng2 = ctx.createRadialGradient(canvas.width*.25,canvas.height*.7,0,canvas.width*.25,canvas.height*.7,canvas.width*.4);
+  ng2.addColorStop(0,`rgba(110,231,247,${0.025*breath})`);
+  ng2.addColorStop(1,'transparent');
+  ctx.fillStyle=ng2;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // twinkling star field
+  const now = performance.now()/1000;
+  for (let i=0;i<90;i++){
+    const sx = (i*137.508)%canvas.width;
+    const sy = (i*97.31+13)%canvas.height;
+    const twinkle = 0.15 + 0.85 * Math.abs(Math.sin(now*0.5 + i*2.39));
+    const size = (i%3===0) ? 1.5 : 0.8;
+    ctx.globalAlpha = twinkle * 0.35;
+    ctx.fillStyle = (i%7===0) ? '#6ee7f7' : (i%11===0) ? '#a78bfa' : '#fff';
     ctx.beginPath();
-    ctx.arc((i*137.5)%canvas.width,(i*97.3+13)%canvas.height,1,0,Math.PI*2);
+    ctx.arc(sx,sy,size,0,Math.PI*2);
     ctx.fill();
   }
+  ctx.globalAlpha = 1;
 }
 
 function glow(x,y,r,col){
-  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  // outer halo
+  const g=ctx.createRadialGradient(x,y,0,x,y,r*1.3);
   g.addColorStop(0,col);
+  g.addColorStop(0.5,col.replace(/[\d.]+\)$/,v=>(parseFloat(v)*0.4)+')'));
   g.addColorStop(1,'transparent');
   ctx.beginPath();
-  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.arc(x,y,r*1.3,0,Math.PI*2);
   ctx.fillStyle=g;
+  ctx.fill();
+  // inner bright core
+  const g2=ctx.createRadialGradient(x,y,0,x,y,r*0.4);
+  g2.addColorStop(0,'rgba(255,255,255,0.15)');
+  g2.addColorStop(1,'transparent');
+  ctx.beginPath();
+  ctx.arc(x,y,r*0.4,0,Math.PI*2);
+  ctx.fillStyle=g2;
   ctx.fill();
 }
 
@@ -251,21 +309,65 @@ function capsule(x,y,w,h,c1,c2,ang=0){
   ctx.translate(x,y);
   ctx.rotate(ang);
   const r=h/2, hw=w/2;
+
+  // subtle drop shadow
+  ctx.shadowColor='rgba(0,0,0,0.5)';
+  ctx.shadowBlur=8;
+  ctx.shadowOffsetY=3;
+
+  // left half — gradient shading
+  const lg1=ctx.createLinearGradient(-hw,-r,-hw,r);
+  lg1.addColorStop(0, lightenColor(c1,40));
+  lg1.addColorStop(0.4, c1);
+  lg1.addColorStop(1, darkenColor(c1,30));
   ctx.beginPath();
   ctx.arc(-hw+r,0,r,Math.PI/2,3*Math.PI/2);
   ctx.lineTo(0,-r); ctx.lineTo(0,r);
   ctx.closePath();
-  ctx.fillStyle=c1; ctx.fill();
+  ctx.fillStyle=lg1; ctx.fill();
+
+  // right half — gradient shading
+  ctx.shadowColor='transparent';
+  const lg2=ctx.createLinearGradient(0,-r,0,r);
+  lg2.addColorStop(0, lightenColor(c2,40));
+  lg2.addColorStop(0.4, c2);
+  lg2.addColorStop(1, darkenColor(c2,30));
   ctx.beginPath();
   ctx.arc(hw-r,0,r,-Math.PI/2,Math.PI/2);
   ctx.lineTo(0,r); ctx.lineTo(0,-r);
   ctx.closePath();
-  ctx.fillStyle=c2; ctx.fill();
-  // shine
+  ctx.fillStyle=lg2; ctx.fill();
+
+  // center seam
   ctx.beginPath();
-  ctx.ellipse(-hw/4,-r/3,hw/3,r/4,-0.3,0,Math.PI*2);
-  ctx.fillStyle='rgba(255,255,255,.4)'; ctx.fill();
+  ctx.moveTo(0,-r); ctx.lineTo(0,r);
+  ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=1; ctx.stroke();
+
+  // primary shine highlight
+  ctx.beginPath();
+  ctx.ellipse(-hw/4,-r/3,hw/3,r/3.5,-0.25,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,.45)'; ctx.fill();
+
+  // secondary rim light
+  ctx.beginPath();
+  ctx.ellipse(hw/4,-r/4,hw/5,r/5,0.15,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,.2)'; ctx.fill();
+
   ctx.restore();
+}
+
+// color helpers for 3D capsule
+function lightenColor(hex,amt){
+  const [r,g,b]=hexToRgb(hex);
+  return `rgb(${Math.min(255,r+amt)},${Math.min(255,g+amt)},${Math.min(255,b+amt)})`;
+}
+function darkenColor(hex,amt){
+  const [r,g,b]=hexToRgb(hex);
+  return `rgb(${Math.max(0,r-amt)},${Math.max(0,g-amt)},${Math.max(0,b-amt)})`;
+}
+function hexToRgb(hex){
+  hex=hex.replace('#','');
+  return [parseInt(hex.substring(0,2),16),parseInt(hex.substring(2,4),16),parseInt(hex.substring(4,6),16)];
 }
 
 function label(x,y,txt,alpha=1,size=15){
@@ -273,9 +375,21 @@ function label(x,y,txt,alpha=1,size=15){
   ctx.globalAlpha=alpha;
   ctx.font=`bold ${size}px Segoe UI`;
   ctx.textAlign='center';
+  // glass pill background
+  const tw=ctx.measureText(txt).width;
+  const px=12,py=5;
+  ctx.fillStyle='rgba(10,15,40,0.55)';
+  ctx.beginPath();
+  ctx.roundRect(x-tw/2-px,y-size+2-py,tw+px*2,size+py*2+4,size/2);
+  ctx.fill();
+  ctx.strokeStyle='rgba(110,231,247,0.18)';
+  ctx.lineWidth=0.8;
+  ctx.stroke();
+  // text with glow
   ctx.fillStyle='#6ee7f7';
-  ctx.shadowColor='#6ee7f7'; ctx.shadowBlur=12;
+  ctx.shadowColor='#6ee7f7'; ctx.shadowBlur=16;
   ctx.fillText(txt,x,y);
+  ctx.shadowBlur=0;
   ctx.restore();
 }
 
@@ -284,39 +398,137 @@ function subLabel(x,y,txt,alpha=1){
   ctx.globalAlpha=alpha;
   ctx.font='13px Segoe UI';
   ctx.textAlign='center';
-  ctx.fillStyle='rgba(255,220,180,.85)';
+  ctx.fillStyle='rgba(255,220,180,.9)';
+  ctx.shadowColor='rgba(255,180,100,0.3)'; ctx.shadowBlur=6;
   ctx.fillText(txt,x,y);
   ctx.restore();
 }
 
-// simple human silhouette
+// anatomical human silhouette — smooth curves, body fill, organ hints
 function humanOutline(cx,cy,sc=1,al=1){
   ctx.save();
   ctx.globalAlpha=al;
   ctx.translate(cx,cy);
   ctx.scale(sc,sc);
-  ctx.strokeStyle='rgba(110,231,247,.35)';
-  ctx.lineWidth=2; ctx.lineCap='round';
 
+  // outer body glow aura
+  const aura=ctx.createRadialGradient(0,-20,60,0,-20,200);
+  aura.addColorStop(0,'rgba(110,231,247,0.04)');
+  aura.addColorStop(1,'transparent');
+  ctx.fillStyle=aura;
+  ctx.fillRect(-200,-300,400,550);
+
+  // --- body silhouette filled path ---
+  ctx.beginPath();
   // head
-  ctx.beginPath(); ctx.arc(0,-140,28,0,Math.PI*2); ctx.stroke();
+  ctx.arc(0,-145,26,0,Math.PI*2);
+  ctx.fillStyle='rgba(110,231,247,0.06)';
+  ctx.fill();
+  ctx.strokeStyle='rgba(110,231,247,0.4)';
+  ctx.lineWidth=2; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.stroke();
+
+  // neck + shoulders + torso + hips as one smooth path
+  ctx.beginPath();
+  ctx.moveTo(-10,-119);
   // neck
-  ctx.beginPath(); ctx.moveTo(-7,-112); ctx.lineTo(-7,-92);
-  ctx.moveTo(7,-112); ctx.lineTo(7,-92); ctx.stroke();
-  // torso
-  ctx.beginPath();
-  ctx.moveTo(-40,-92); ctx.lineTo(-45,18); ctx.lineTo(-25,78); ctx.lineTo(25,78); ctx.lineTo(45,18); ctx.lineTo(40,-92); ctx.closePath();
+  ctx.lineTo(-10,-100);
+  // left shoulder curve
+  ctx.bezierCurveTo(-15,-95,-38,-92,-46,-85);
+  // left arm
+  ctx.bezierCurveTo(-55,-78,-65,-60,-72,-40);
+  ctx.bezierCurveTo(-78,-20,-80,5,-76,20);
+  // hand
+  ctx.bezierCurveTo(-74,28,-70,32,-66,30);
+  // arm back to torso
+  ctx.bezierCurveTo(-62,25,-58,10,-52,-15);
+  ctx.bezierCurveTo(-48,-35,-46,-60,-44,-78);
+  // left torso wall
+  ctx.bezierCurveTo(-42,-65,-44,-20,-46,20);
+  ctx.bezierCurveTo(-48,45,-42,65,-35,80);
+  // left hip
+  ctx.bezierCurveTo(-30,90,-28,95,-26,100);
+  // left leg
+  ctx.bezierCurveTo(-28,130,-30,165,-32,200);
+  // left foot
+  ctx.bezierCurveTo(-33,210,-35,215,-28,218);
+  ctx.bezierCurveTo(-22,220,-20,218,-20,212);
+  // back up left leg inner
+  ctx.bezierCurveTo(-18,180,-15,140,-12,100);
+  // crotch area
+  ctx.bezierCurveTo(-8,90,8,90,12,100);
+  // right leg
+  ctx.bezierCurveTo(15,140,18,180,20,212);
+  // right foot
+  ctx.bezierCurveTo(20,218,22,220,28,218);
+  ctx.bezierCurveTo(35,215,33,210,32,200);
+  // right leg up
+  ctx.bezierCurveTo(30,165,28,130,26,100);
+  // right hip
+  ctx.bezierCurveTo(28,95,30,90,35,80);
+  ctx.bezierCurveTo(42,65,48,45,46,20);
+  // right torso wall
+  ctx.bezierCurveTo(44,-20,42,-65,44,-78);
+  // right arm start
+  ctx.bezierCurveTo(46,-60,48,-35,52,-15);
+  ctx.bezierCurveTo(58,10,62,25,66,30);
+  // right hand
+  ctx.bezierCurveTo(70,32,74,28,76,20);
+  // right arm
+  ctx.bezierCurveTo(80,5,78,-20,72,-40);
+  ctx.bezierCurveTo(65,-60,55,-78,46,-85);
+  // right shoulder
+  ctx.bezierCurveTo(38,-92,15,-95,10,-100);
+  // neck right
+  ctx.lineTo(10,-119);
+  ctx.closePath();
+
+  // body fill gradient
+  const bodyGrad=ctx.createLinearGradient(-50,-120,50,220);
+  bodyGrad.addColorStop(0,'rgba(110,231,247,0.08)');
+  bodyGrad.addColorStop(0.5,'rgba(80,180,220,0.05)');
+  bodyGrad.addColorStop(1,'rgba(110,231,247,0.03)');
+  ctx.fillStyle=bodyGrad;
+  ctx.fill();
+  ctx.strokeStyle='rgba(110,231,247,0.35)';
+  ctx.lineWidth=1.5;
   ctx.stroke();
-  // arms
+
+  // --- internal organ hints (subtle) ---
+  // heart area
   ctx.beginPath();
-  ctx.moveTo(-40,-85); ctx.lineTo(-80,-65); ctx.lineTo(-75,22);
-  ctx.moveTo(40,-85);  ctx.lineTo(80,-65);  ctx.lineTo(75,22);
+  ctx.arc(-12,-60,8,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,100,100,0.12)';
+  ctx.fill();
+  ctx.strokeStyle='rgba(255,100,100,0.25)';
+  ctx.lineWidth=0.8;
   ctx.stroke();
-  // legs
+
+  // liver area
   ctx.beginPath();
-  ctx.moveTo(-24,78); ctx.lineTo(-28,175); ctx.lineTo(-26,215);
-  ctx.moveTo(24,78);  ctx.lineTo(28,175);  ctx.lineTo(26,215);
+  ctx.ellipse(18,-30,18,12,0.15,0,Math.PI*2);
+  ctx.fillStyle='rgba(200,80,80,0.1)';
+  ctx.fill();
+  ctx.strokeStyle='rgba(200,80,80,0.2)';
   ctx.stroke();
+
+  // stomach area
+  ctx.beginPath();
+  ctx.ellipse(-8,-15,12,10,-0.2,0,Math.PI*2);
+  ctx.fillStyle='rgba(200,200,80,0.08)';
+  ctx.fill();
+  ctx.strokeStyle='rgba(200,200,80,0.18)';
+  ctx.stroke();
+
+  // intestine hints
+  ctx.strokeStyle='rgba(215,140,90,0.15)';
+  ctx.lineWidth=1;
+  for(let i=0;i<4;i++){
+    ctx.beginPath();
+    ctx.arc(i*8-12, 20+i*8, 6+i*2, 0, Math.PI*1.5);
+    ctx.stroke();
+  }
+
   ctx.restore();
 }
 
@@ -962,6 +1174,40 @@ document.getElementById('startBtn').addEventListener('click',()=>{
 updateUI();
 
 // ═══════════════════════════════════════════════════════════
+//  AMBIENT FLOATING PARTICLES
+// ═══════════════════════════════════════════════════════════
+const PARTICLES = [];
+for(let i=0;i<35;i++){
+  PARTICLES.push({
+    x: Math.random()*2000,
+    y: Math.random()*2000,
+    vx: (Math.random()-0.5)*0.3,
+    vy: -Math.random()*0.4 - 0.1,
+    r: Math.random()*2+0.5,
+    a: Math.random()*0.25+0.05,
+    color: ['#6ee7f7','#a78bfa','#ff6b6b','#ffd93d'][Math.floor(Math.random()*4)]
+  });
+}
+
+function drawParticles(){
+  const W=canvas.width, H=canvas.height;
+  for(const p of PARTICLES){
+    p.x += p.vx;
+    p.y += p.vy;
+    if(p.y < -10) { p.y = H+10; p.x = Math.random()*W; }
+    if(p.x < -10) p.x = W+10;
+    if(p.x > W+10) p.x = -10;
+    const pulse = p.a * (0.6 + 0.4*Math.sin(performance.now()/1500 + p.x));
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+
+// ═══════════════════════════════════════════════════════════
 //  MAIN LOOP
 // ═══════════════════════════════════════════════════════════
 function loop(ts){
@@ -970,7 +1216,7 @@ function loop(ts){
 
   if(isPlaying){
     sceneTime+=dt;
-    transAlpha=Math.min(transAlpha+dt*2.5,1);  // fade-in over ~0.4s
+    transAlpha=Math.min(transAlpha+dt*2.5,1);
 
     if(sceneTime>=SCENES[currentScene].dur){
       if(currentScene<SCENES.length-1){
@@ -987,9 +1233,12 @@ function loop(ts){
   progBar.style.width=`${progress*100}%`;
 
   bg();
+  drawParticles();
 
+  // smooth eased fade
+  const easedAlpha = transAlpha < 1 ? easeOut(transAlpha) : 1;
   ctx.save();
-  ctx.globalAlpha=transAlpha;
+  ctx.globalAlpha=easedAlpha;
   SCENES[currentScene].fn(progress);
   ctx.restore();
 
